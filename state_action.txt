@@ -1,0 +1,21 @@
+# Danger path
+# Direction of snake
+# Direction of food
+
+[Danger straight, danger right, danger left,
+ Direction left, Direction right, Direction Up, Direction down
+ Food left, Food right, Food up, Food down]
+
+[0, 0 ,1,
+ 0, 0, 1, 0,
+ 0, 1, 1, 0]
+
+Rewards:
+    Got food = +10
+    Death = -10
+
+
+action = [straight, right, left]
+[1, 0, 0] => Keep on going straight
+[0, 1, 0] => Turn right
+[0, 0, 1] => Turn left

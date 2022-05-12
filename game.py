@@ -179,8 +179,62 @@ class SnakeGame:
         # 6. Return game state
         return False
 
-    def play_step_ai(self):
-        pass
+    def play_step_ai(self, action):
+        self.frame_iteration += 1
+        self.iterations_since_reward += 1
+
+        # Check if user closes the window
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+        # Convert AI action to a new direction
+
+        # action = [straight, right, left]
+        # [1, 0, 0] = > Keep on going straight
+        # [0, 1, 0] = > Turn right
+        # [0, 0, 1] = > Turn left
+
+        clockwise_dir = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP]
+        dir_idx = clockwise_dir.index(self.direction)
+
+        if np.array_equal(action, [0, 1, 0]):  # Turn right
+            dir_idx = (dir_idx + 1) % len(clockwise_dir)
+        if np.array_equal(action, [0, 0, 1]):  # Turn left
+            dir_idx = (dir_idx - 1) % len(clockwise_dir)
+
+        self.direction = clockwise_dir[dir_idx]
+
+        # Move the snake
+        self._move()
+
+        # Check if game is over
+        if self.is_collision():
+            return True, -10, self.score  # Game over, reward, final score
+        elif self.iterations_since_reward > 100 * len(self.body):
+            return True, -5, self.score   # Game over, reward, final score
+
+        reward = 0
+        # Check if food is reached
+        if self.head == self.food:
+            self.score += 1
+            self._place_food()
+            self._extend_snake()
+
+            self.iterations_since_reward = 0
+            reward = 10
+        # elif self._within_one():
+        #     reward = 5
+
+        # Update UI and clock
+        self._update_ui()
+        self.clock.tick(self.fps)
+
+        # Return game state
+        return False, reward, self.score
+
+
 
     def is_collision(self, point=None):
         if not point:
@@ -200,7 +254,8 @@ class SnakeGame:
         return False
 
     def _within_one(self):
-        pass
+        # TODO: Fix this one PLEASE
+        return abs(self.head.x - self.food.x) == BLOCK_SIZE and abs(self.head.y - self.food.y) == BLOCK_SIZE
 
     @staticmethod
     def human_play():
